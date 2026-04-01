@@ -24,7 +24,7 @@ export default function HeroBanner() {
                 <span className="text-yellow-300">Delivered to Your Door</span>
               </h1>
               <p className="text-primary-100 text-base md:text-lg mb-6">
-                Alam Nagar Super Shop e paiben 1000+ daily essentials. Taza shobji theke premium mach — apnar ranna ghorer shob kichu.
+                আলম নগর সুপার শপ এ পাবেন ১০০০+ নিত্য প্রয়োজনীয় পণ্য। তাজা সবজি থেকে প্রিমিয়াম মাছ — আপনার রান্না ঘরের সব কিছু।
               </p>
               <Link
                 to="/products"
