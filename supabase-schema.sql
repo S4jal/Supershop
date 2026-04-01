@@ -44,6 +44,7 @@ CREATE TABLE orders (
   customer_area TEXT NOT NULL,
   delivery_note TEXT,
   payment_method TEXT NOT NULL DEFAULT 'cod',
+  payment_details JSONB,
   subtotal NUMERIC(10,2) NOT NULL DEFAULT 0,
   delivery_charge NUMERIC(10,2) NOT NULL DEFAULT 0,
   total NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -72,6 +73,7 @@ CREATE TABLE payment_methods (
   icon TEXT DEFAULT '💳',
   description TEXT,
   account_info TEXT,
+  fields JSONB DEFAULT '[]',
   is_active BOOLEAN DEFAULT true,
   sort_order INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -83,11 +85,11 @@ CREATE POLICY "Public read payment_methods" ON payment_methods FOR SELECT USING 
 CREATE POLICY "Auth manage payment_methods" ON payment_methods FOR ALL USING (auth.role() = 'authenticated');
 
 -- Seed default payment methods
-INSERT INTO payment_methods (name, key, icon, description, account_info, is_active, sort_order) VALUES
-  ('Cash on Delivery', 'cod', '💵', 'Pay when you receive', NULL, true, 1),
-  ('bKash', 'bkash', '📱', 'Mobile payment', NULL, false, 2),
-  ('Nagad', 'nagad', '📲', 'Mobile payment', NULL, false, 3),
-  ('Card Payment', 'card', '💳', 'Visa/Mastercard', NULL, false, 4);
+INSERT INTO payment_methods (name, key, icon, description, account_info, fields, is_active, sort_order) VALUES
+  ('Cash on Delivery', 'cod', '💵', 'Pay when you receive', NULL, '[]', true, 1),
+  ('bKash', 'bkash', '📱', 'Mobile payment', 'bKash: 01XXXXXXXXX (Personal)', '[{"name":"bkash_phone","label":"bKash Number","type":"tel","placeholder":"01XXXXXXXXX","required":true},{"name":"bkash_txid","label":"Transaction ID (TxID)","type":"text","placeholder":"Enter TxID after payment","required":true}]', false, 2),
+  ('Nagad', 'nagad', '📲', 'Mobile payment', 'Nagad: 01XXXXXXXXX', '[{"name":"nagad_phone","label":"Nagad Number","type":"tel","placeholder":"01XXXXXXXXX","required":true},{"name":"nagad_txid","label":"Transaction ID (TxID)","type":"text","placeholder":"Enter TxID after payment","required":true}]', false, 3),
+  ('Card Payment', 'card', '💳', 'Visa/Mastercard', NULL, '[{"name":"card_number","label":"Card Number","type":"text","placeholder":"XXXX XXXX XXXX XXXX","required":true},{"name":"card_expiry","label":"Expiry Date","type":"text","placeholder":"MM/YY","required":true},{"name":"card_cvv","label":"CVV","type":"text","placeholder":"XXX","required":true}]', false, 4);
 
 -- Create storage bucket for product images
 INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true)

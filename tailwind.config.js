@@ -21,6 +21,20 @@ export default {
         },
         accent: '#ff6b35',
       },
+      animation: {
+        fadeIn: 'fadeIn 0.5s ease-out',
+        scaleIn: 'scaleIn 0.5s ease-out 0.15s both',
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: '0', transform: 'translateX(-20px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.85)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+      },
     },
   },
   plugins: [

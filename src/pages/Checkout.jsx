@@ -6,10 +6,20 @@ import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 const defaultPaymentMethods = [
-  { id: 'cod', name: 'Cash on Delivery', key: 'cod', icon: '💵', description: 'Pay when you receive', account_info: null },
-  { id: 'bkash', name: 'bKash', key: 'bkash', icon: '📱', description: 'Mobile payment', account_info: null },
-  { id: 'nagad', name: 'Nagad', key: 'nagad', icon: '📲', description: 'Mobile payment', account_info: null },
-  { id: 'card', name: 'Card Payment', key: 'card', icon: '💳', description: 'Visa/Mastercard', account_info: null },
+  { id: 'cod', name: 'Cash on Delivery', key: 'cod', icon: '💵', description: 'Pay when you receive', account_info: null, fields: [] },
+  { id: 'bkash', name: 'bKash', key: 'bkash', icon: '📱', description: 'Mobile payment', account_info: null, fields: [
+    { name: 'bkash_phone', label: 'bKash Number', type: 'tel', placeholder: '01XXXXXXXXX', required: true },
+    { name: 'bkash_txid', label: 'Transaction ID (TxID)', type: 'text', placeholder: 'Enter TxID after payment', required: true },
+  ]},
+  { id: 'nagad', name: 'Nagad', key: 'nagad', icon: '📲', description: 'Mobile payment', account_info: null, fields: [
+    { name: 'nagad_phone', label: 'Nagad Number', type: 'tel', placeholder: '01XXXXXXXXX', required: true },
+    { name: 'nagad_txid', label: 'Transaction ID (TxID)', type: 'text', placeholder: 'Enter TxID after payment', required: true },
+  ]},
+  { id: 'card', name: 'Card Payment', key: 'card', icon: '💳', description: 'Visa/Mastercard', account_info: null, fields: [
+    { name: 'card_number', label: 'Card Number', type: 'text', placeholder: 'XXXX XXXX XXXX XXXX', required: true },
+    { name: 'card_expiry', label: 'Expiry Date', type: 'text', placeholder: 'MM/YY', required: true },
+    { name: 'card_cvv', label: 'CVV', type: 'text', placeholder: 'XXX', required: true },
+  ]},
 ]
 
 export default function Checkout() {
@@ -18,6 +28,7 @@ export default function Checkout() {
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState([])
+  const [paymentFields, setPaymentFields] = useState({})
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -42,8 +53,20 @@ export default function Checkout() {
   const deliveryCharge = cartTotal >= 500 ? 0 : 50
   const finalTotal = cartTotal + deliveryCharge
 
+  const selectedMethod = paymentMethods.find(m => m.key === form.payment)
+  const activeFields = selectedMethod?.fields || []
+
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handlePaymentFieldChange = (fieldName, value) => {
+    setPaymentFields(prev => ({ ...prev, [fieldName]: value }))
+  }
+
+  const handlePaymentSelect = (key) => {
+    setForm(prev => ({ ...prev, payment: key }))
+    setPaymentFields({})
   }
 
   const handleSubmit = async (e) => {
@@ -53,9 +76,17 @@ export default function Checkout() {
       return
     }
 
+    // Validate payment fields
+    for (const field of activeFields) {
+      if (field.required && !paymentFields[field.name]?.trim()) {
+        toast.error(`Please fill "${field.label}"`)
+        return
+      }
+    }
+
     setSubmitting(true)
     try {
-      const orderNumber = 'SS-' + Date.now().toString(36).toUpperCase()
+      const orderNumber = 'AN-' + Date.now().toString(36).toUpperCase()
 
       const { data: order, error: orderError } = await supabase.from('orders').insert({
         order_number: orderNumber,
@@ -65,6 +96,7 @@ export default function Checkout() {
         customer_area: 'Alam Nagar',
         delivery_note: form.note,
         payment_method: form.payment,
+        payment_details: activeFields.length > 0 ? paymentFields : null,
         subtotal: Math.round(cartTotal),
         delivery_charge: deliveryCharge,
         total: Math.round(finalTotal),
@@ -186,10 +218,11 @@ export default function Checkout() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {paymentMethods.map(method => (
                   <label key={method.key}
+                    onClick={() => handlePaymentSelect(method.key)}
                     className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition ${
                       form.payment === method.key ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
                     }`}>
-                    <input type="radio" name="payment" value={method.key} checked={form.payment === method.key} onChange={handleChange} className="hidden" />
+                    <input type="radio" name="payment" value={method.key} checked={form.payment === method.key} readOnly className="hidden" />
                     <span className="text-2xl">{method.icon}</span>
                     <div>
                       <p className="text-sm font-medium text-gray-800">{method.name}</p>
@@ -199,19 +232,36 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {/* Show account info for selected payment method */}
-              {(() => {
-                const selected = paymentMethods.find(m => m.key === form.payment)
-                if (selected?.account_info) {
-                  return (
-                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                      <p className="text-sm font-semibold text-yellow-800 mb-1">{selected.name} Payment Info:</p>
-                      <p className="text-sm text-yellow-700 whitespace-pre-line">{selected.account_info}</p>
-                    </div>
-                  )
-                }
-                return null
-              })()}
+              {/* Account info for selected method */}
+              {selectedMethod?.account_info && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <p className="text-sm font-semibold text-yellow-800 mb-1">{selectedMethod.name} Payment Info:</p>
+                  <p className="text-sm text-yellow-700 whitespace-pre-line">{selectedMethod.account_info}</p>
+                </div>
+              )}
+
+              {/* Dynamic payment fields */}
+              {activeFields.length > 0 && (
+                <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                  <p className="text-sm font-semibold text-gray-700 mb-3">{selectedMethod?.name} Details</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {activeFields.map(field => (
+                      <div key={field.name}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {field.label} {field.required && <span className="text-red-500">*</span>}
+                        </label>
+                        <input
+                          type={field.type || 'text'}
+                          value={paymentFields[field.name] || ''}
+                          onChange={(e) => handlePaymentFieldChange(field.name, e.target.value)}
+                          placeholder={field.placeholder}
+                          className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

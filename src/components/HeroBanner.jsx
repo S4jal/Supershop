@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { FiArrowRight, FiTruck, FiClock, FiShield } from 'react-icons/fi'
 
 export default function HeroBanner() {
@@ -9,12 +8,7 @@ export default function HeroBanner() {
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="max-w-7xl mx-auto px-4 py-10 md:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-lg"
-            >
+            <div className="max-w-lg animate-fadeIn">
               <span className="inline-block bg-white/20 text-sm px-3 py-1 rounded-full mb-4">
                 🎉 Free Delivery on ৳500+ orders
               </span>
@@ -32,16 +26,11 @@ export default function HeroBanner() {
               >
                 Shop Now <FiArrowRight />
               </Link>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-8xl md:text-[140px] leading-none"
-            >
+            <div className="text-8xl md:text-[140px] leading-none animate-scaleIn">
               🛒
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
