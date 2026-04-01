@@ -24,7 +24,7 @@ export default function HeroBanner() {
                 <span className="text-yellow-300">Delivered to Your Door</span>
               </h1>
               <p className="text-primary-100 text-base md:text-lg mb-6">
-                Shop from 1000+ daily essentials. From fresh vegetables to premium fish — everything your kitchen needs.
+                Alam Nagar Super Shop e paiben 1000+ daily essentials. Taza shobji theke premium mach — apnar ranna ghorer shob kichu.
               </p>
               <Link
                 to="/products"

@@ -10,15 +10,15 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">S</span>
+                <span className="text-white font-bold text-xl">A</span>
               </div>
               <div>
-                <h3 className="text-white font-bold text-lg">SuperShop</h3>
+                <h3 className="text-white font-bold text-lg">Alam Nagar Super Shop</h3>
                 <p className="text-xs text-gray-500">Fresh Grocery Delivered</p>
               </div>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Your trusted online grocery store in Bangladesh. Fresh products delivered to your doorstep.
+              Alam Nagar er nijer grocery shop. Fresh products apnar dor gora porjonto.
             </p>
             <div className="flex gap-3">
               <a href="#" className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition"><FiFacebook size={16} /></a>
@@ -55,9 +55,9 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Contact Us</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2"><FiMapPin size={16} className="text-primary-400 shrink-0" /> Gulshan-2, Dhaka-1212, Bangladesh</li>
-              <li className="flex items-center gap-2"><FiPhone size={16} className="text-primary-400 shrink-0" /> +880 16789</li>
-              <li className="flex items-center gap-2"><FiMail size={16} className="text-primary-400 shrink-0" /> support@supershop.com.bd</li>
+              <li className="flex items-center gap-2"><FiMapPin size={16} className="text-primary-400 shrink-0" /> Alam Nagar, Bangladesh</li>
+              <li className="flex items-center gap-2"><FiPhone size={16} className="text-primary-400 shrink-0" /> +880 1XXXXXXXXX</li>
+              <li className="flex items-center gap-2"><FiMail size={16} className="text-primary-400 shrink-0" /> support@alamnagarsupershop.com</li>
             </ul>
             <div className="mt-4 p-3 bg-gray-800 rounded-lg">
               <p className="text-xs text-gray-400">Delivery Hours</p>
@@ -68,7 +68,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-500">© 2026 SuperShop. All rights reserved.</p>
+          <p className="text-xs text-gray-500">© 2026 Alam Nagar Super Shop. All rights reserved.</p>
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <span>We accept:</span>
             <span className="bg-gray-800 px-2 py-1 rounded">bKash</span>

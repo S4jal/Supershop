@@ -23,8 +23,8 @@ export default function Navbar() {
       <div className="bg-primary-700 text-white text-xs py-1.5">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1"><FiPhone size={12} /> 16789</span>
-            <span className="hidden sm:flex items-center gap-1"><FiMapPin size={12} /> Dhaka, Bangladesh</span>
+            <span className="flex items-center gap-1"><FiPhone size={12} /> 01XXXXXXXXX</span>
+            <span className="hidden sm:flex items-center gap-1"><FiMapPin size={12} /> Alam Nagar, Bangladesh</span>
           </div>
           <div className="flex items-center gap-3">
             <span>Free delivery on orders over ৳500</span>
@@ -38,10 +38,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">S</span>
+              <span className="text-white font-bold text-xl">A</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-gray-800 leading-tight">SuperShop</h1>
+              <h1 className="text-xl font-bold text-gray-800 leading-tight">Alam Nagar Super Shop</h1>
               <p className="text-[10px] text-gray-500 -mt-0.5">Fresh Grocery Delivered</p>
             </div>
           </Link>

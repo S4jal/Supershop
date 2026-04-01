@@ -20,10 +20,10 @@ export default function AdminLayout() {
         <div className="p-5 border-b">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">A</span>
             </div>
             <div>
-              <h2 className="font-bold text-gray-800">SuperShop</h2>
+              <h2 className="font-bold text-gray-800">Alam Nagar Super Shop</h2>
               <p className="text-[10px] text-gray-400">Admin Panel</p>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function AdminLayout() {
         <header className="md:hidden bg-white border-b p-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">S</span>
+              <span className="text-white font-bold">A</span>
             </div>
             <span className="font-bold text-gray-800">Admin</span>
           </div>
