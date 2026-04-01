@@ -5,23 +5,6 @@ import { useCart } from '../context/CartContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
-const defaultPaymentMethods = [
-  { id: 'cod', name: 'Cash on Delivery', key: 'cod', icon: '💵', description: 'Pay when you receive', account_info: null, fields: [] },
-  { id: 'bkash', name: 'bKash', key: 'bkash', icon: '📱', description: 'Mobile payment', account_info: null, fields: [
-    { name: 'bkash_phone', label: 'bKash Number', type: 'tel', placeholder: '01XXXXXXXXX', required: true },
-    { name: 'bkash_txid', label: 'Transaction ID (TxID)', type: 'text', placeholder: 'Enter TxID after payment', required: true },
-  ]},
-  { id: 'nagad', name: 'Nagad', key: 'nagad', icon: '📲', description: 'Mobile payment', account_info: null, fields: [
-    { name: 'nagad_phone', label: 'Nagad Number', type: 'tel', placeholder: '01XXXXXXXXX', required: true },
-    { name: 'nagad_txid', label: 'Transaction ID (TxID)', type: 'text', placeholder: 'Enter TxID after payment', required: true },
-  ]},
-  { id: 'card', name: 'Card Payment', key: 'card', icon: '💳', description: 'Visa/Mastercard', account_info: null, fields: [
-    { name: 'card_number', label: 'Card Number', type: 'text', placeholder: 'XXXX XXXX XXXX XXXX', required: true },
-    { name: 'card_expiry', label: 'Expiry Date', type: 'text', placeholder: 'MM/YY', required: true },
-    { name: 'card_cvv', label: 'CVV', type: 'text', placeholder: 'XXX', required: true },
-  ]},
-]
-
 export default function Checkout() {
   const { cart, cartTotal, cartCount, clearCart } = useCart()
   const navigate = useNavigate()
@@ -44,8 +27,6 @@ export default function Checkout() {
         if (data && data.length > 0) {
           setPaymentMethods(data)
           setForm(prev => ({ ...prev, payment: data[0].key }))
-        } else {
-          setPaymentMethods(defaultPaymentMethods)
         }
       })
   }, [])
