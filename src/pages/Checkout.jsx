@@ -13,8 +13,8 @@ export default function Checkout() {
   const [form, setForm] = useState({
     name: '',
     phone: '',
-    address: '',
-    area: '',
+    road: '',
+    house: '',
     note: '',
     payment: 'cod',
   })
@@ -28,7 +28,7 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.phone || !form.address || !form.area) {
+    if (!form.name || !form.phone || !form.road || !form.house) {
       toast.error('Please fill all required fields')
       return
     }
@@ -41,8 +41,8 @@ export default function Checkout() {
         order_number: orderNumber,
         customer_name: form.name,
         customer_phone: form.phone,
-        customer_address: form.address,
-        customer_area: form.area,
+        customer_address: `${form.house}, ${form.road}, Alam Nagar`,
+        customer_area: 'Alam Nagar',
         delivery_note: form.note,
         payment_method: form.payment,
         subtotal: Math.round(cartTotal),
@@ -100,7 +100,7 @@ export default function Checkout() {
         </div>
         <h2 className="text-2xl font-bold text-gray-800">Order Placed Successfully! 🎉</h2>
         <p className="text-gray-500 mt-3">
-          Thank you, {form.name}! Your order will be delivered to {form.area} within 2 hours.
+          Thank you, {form.name}! Your order will be delivered to {form.road}, Alam Nagar within 2 hours.
         </p>
         <p className="text-sm text-gray-400 mt-2">Order confirmation sent to {form.phone}</p>
         <Link
@@ -137,27 +137,20 @@ export default function Checkout() {
                   <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="01XXXXXXXXX"
                     className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address *</label>
-                  <input type="text" name="address" value={form.address} onChange={handleChange} placeholder="House/Flat, Road, Block"
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Road Number *</label>
+                  <select name="road" value={form.road} onChange={handleChange}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm bg-white">
+                    <option value="">Select Road</option>
+                    {Array.from({ length: 18 }, (_, i) => (
+                      <option key={i + 1} value={`Road No ${i + 1}`}>Road No {i + 1}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Area *</label>
-                  <select name="area" value={form.area} onChange={handleChange}
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm bg-white">
-                    <option value="">Select Area</option>
-                    <option value="Gulshan">Gulshan</option>
-                    <option value="Banani">Banani</option>
-                    <option value="Dhanmondi">Dhanmondi</option>
-                    <option value="Uttara">Uttara</option>
-                    <option value="Mirpur">Mirpur</option>
-                    <option value="Mohammadpur">Mohammadpur</option>
-                    <option value="Bashundhara">Bashundhara</option>
-                    <option value="Motijheel">Motijheel</option>
-                    <option value="Tejgaon">Tejgaon</option>
-                    <option value="Farmgate">Farmgate</option>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">House Name / Number / Flat *</label>
+                  <input type="text" name="house" value={form.house} onChange={handleChange} placeholder="e.g. House 12, Flat 3A"
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Note</label>
