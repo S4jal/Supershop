@@ -45,6 +45,8 @@ CREATE TABLE orders (
   delivery_note TEXT,
   payment_method TEXT NOT NULL DEFAULT 'cod',
   payment_details JSONB,
+  coupon_code TEXT,
+  discount NUMERIC(10,2) NOT NULL DEFAULT 0,
   subtotal NUMERIC(10,2) NOT NULL DEFAULT 0,
   delivery_charge NUMERIC(10,2) NOT NULL DEFAULT 0,
   total NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -85,6 +87,25 @@ CREATE POLICY "Users insert own profile" ON profiles FOR INSERT WITH CHECK (auth
 CREATE TRIGGER profiles_updated_at BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- Coupons table
+CREATE TABLE coupons (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  discount_type TEXT NOT NULL DEFAULT 'percentage' CHECK (discount_type IN ('percentage', 'fixed')),
+  discount_value NUMERIC(10,2) NOT NULL DEFAULT 0,
+  min_order NUMERIC(10,2) DEFAULT 0,
+  max_discount NUMERIC(10,2),
+  usage_limit INT,
+  used_count INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read coupons" ON coupons FOR SELECT USING (true);
+CREATE POLICY "Auth manage coupons" ON coupons FOR ALL USING (auth.role() = 'authenticated');
+
 -- Payment methods table
 CREATE TABLE payment_methods (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -115,13 +136,16 @@ INSERT INTO payment_methods (name, key, icon, description, account_info, fields,
 INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage policy: anyone can view product images
-CREATE POLICY "Public product images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'products');
+-- Storage policies (skip if already exist)
+DO $$ BEGIN
+  CREATE POLICY "Public product images" ON storage.objects FOR SELECT USING (bucket_id = 'products');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- Storage policy: authenticated users can upload/delete
-CREATE POLICY "Auth users manage product images" ON storage.objects
-  FOR ALL USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+DO $$ BEGIN
+  CREATE POLICY "Auth users manage product images" ON storage.objects FOR ALL USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Enable RLS
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;

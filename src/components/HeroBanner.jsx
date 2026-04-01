@@ -5,24 +5,24 @@ export default function HeroBanner() {
   return (
     <section>
       {/* Main Banner */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+      <div className="bg-primary-700 text-white">
         <div className="max-w-7xl mx-auto px-4 py-10 md:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-lg animate-fadeIn">
-              <span className="inline-block bg-white/20 text-sm px-3 py-1 rounded-full mb-4">
+              <span className="inline-block bg-amber-400 text-amber-900 text-sm font-semibold px-3 py-1 rounded-full mb-4">
                 🎉 Free Delivery on ৳500+ orders
               </span>
               <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
                 Fresh Groceries
                 <br />
-                <span className="text-yellow-300">Delivered to Your Door</span>
+                <span className="text-amber-300">Delivered to Your Door</span>
               </h1>
-              <p className="text-primary-100 text-base md:text-lg mb-6">
+              <p className="text-primary-200 text-base md:text-lg mb-6">
                 আলম নগর সুপার শপ এ পাবেন ১০০০+ নিত্য প্রয়োজনীয় পণ্য। তাজা সবজি থেকে প্রিমিয়াম মাছ — আপনার রান্না ঘরের সব কিছু।
               </p>
               <Link
                 to="/products"
-                className="inline-flex items-center gap-2 bg-white text-primary-700 font-semibold px-6 py-3 rounded-full hover:bg-yellow-300 hover:text-primary-800 transition-all"
+                className="inline-flex items-center gap-2 bg-amber-400 text-amber-900 font-semibold px-6 py-3 rounded-full hover:bg-amber-300 transition-all"
               >
                 Shop Now <FiArrowRight />
               </Link>
@@ -40,14 +40,14 @@ export default function HeroBanner() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: FiTruck, title: 'Free Delivery', desc: 'On orders ৳500+' },
-              { icon: FiClock, title: 'Express Delivery', desc: 'Within 2 hours' },
-              { icon: FiShield, title: 'Fresh Guarantee', desc: '100% quality assured' },
-              { icon: FiPhone, title: 'Support 24/7', desc: 'Call us anytime' },
+              { icon: FiTruck, title: 'Free Delivery', desc: 'On orders ৳500+', color: 'bg-green-50 text-green-600' },
+              { icon: FiClock, title: 'Express Delivery', desc: 'Within 2 hours', color: 'bg-blue-50 text-blue-600' },
+              { icon: FiShield, title: 'Fresh Guarantee', desc: '100% quality assured', color: 'bg-amber-50 text-amber-600' },
+              { icon: FiPhone, title: 'Support 24/7', desc: 'Call us anytime', color: 'bg-purple-50 text-purple-600' },
             ].map((f, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
-                  <f.icon size={20} className="text-primary-600" />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${f.color.split(' ')[0]}`}>
+                  <f.icon size={20} className={f.color.split(' ')[1]} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-800">{f.title}</p>

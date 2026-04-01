@@ -56,7 +56,10 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (updates) => {
     if (!user) return
-    const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      ...updates,
+    }).eq('id', user.id)
     if (error) throw error
     setProfile(prev => ({ ...prev, ...updates }))
   }

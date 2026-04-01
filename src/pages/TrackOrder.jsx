@@ -181,8 +181,8 @@ export default function TrackOrder() {
           {order.status !== 'delivered' && order.status !== 'cancelled' && (
             <div className={`rounded-xl p-4 flex items-center gap-3 ${
               order.status === 'out_for_delivery'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
-                : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
+                ? 'bg-orange-500 text-white'
+                : 'bg-primary-700 text-white'
             }`}>
               <span className="text-3xl">
                 {order.status === 'out_for_delivery' ? '🛵' :
@@ -207,7 +207,7 @@ export default function TrackOrder() {
           )}
 
           {order.status === 'delivered' && (
-            <div className="rounded-xl p-4 flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+            <div className="rounded-xl p-4 flex items-center gap-3 bg-green-600 text-white">
               <span className="text-3xl">🎉</span>
               <div>
                 <p className="font-bold text-sm">Order Delivered!</p>

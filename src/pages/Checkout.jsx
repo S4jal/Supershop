@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiArrowLeft, FiCheck, FiMapPin, FiEdit2 } from 'react-icons/fi'
+import { FiArrowLeft, FiCheck, FiMapPin, FiEdit2, FiX } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -16,6 +16,10 @@ export default function Checkout() {
   const [paymentFields, setPaymentFields] = useState({})
   const [note, setNote] = useState('')
   const [payment, setPayment] = useState('cod')
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
 
   // Check login & address
   const isLoggedIn = !!user
@@ -32,7 +36,60 @@ export default function Checkout() {
   }, [])
 
   const deliveryCharge = cartTotal >= 500 ? 0 : 50
-  const finalTotal = cartTotal + deliveryCharge
+  const finalTotal = cartTotal - couponDiscount + deliveryCharge
+
+  // Re-validate coupon if cart changes
+  useEffect(() => {
+    if (!appliedCoupon) return
+    if (appliedCoupon.min_order > 0 && cartTotal < appliedCoupon.min_order) {
+      removeCoupon()
+      toast.error('Coupon removed — cart no longer meets minimum order')
+      return
+    }
+    // Recalculate discount
+    let disc = appliedCoupon.discount_type === 'percentage'
+      ? cartTotal * (appliedCoupon.discount_value / 100)
+      : Number(appliedCoupon.discount_value)
+    if (appliedCoupon.max_discount) disc = Math.min(disc, Number(appliedCoupon.max_discount))
+    disc = Math.min(disc, cartTotal)
+    setCouponDiscount(Math.round(disc))
+  }, [cartTotal])
+
+  async function applyCoupon() {
+    const code = couponCode.trim().toUpperCase()
+    if (!code) return
+
+    setApplyingCoupon(true)
+    try {
+      const { data, error } = await supabase.from('coupons').select('*')
+        .eq('code', code).eq('is_active', true).single()
+
+      if (error || !data) { toast.error('Invalid coupon code'); return }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired'); return }
+      if (data.usage_limit && data.used_count >= data.usage_limit) { toast.error('This coupon has reached its usage limit'); return }
+      if (data.min_order > 0 && cartTotal < data.min_order) { toast.error(`Minimum order ৳${data.min_order} required`); return }
+
+      let disc = data.discount_type === 'percentage'
+        ? cartTotal * (data.discount_value / 100)
+        : Number(data.discount_value)
+      if (data.max_discount) disc = Math.min(disc, Number(data.max_discount))
+      disc = Math.min(disc, cartTotal)
+
+      setAppliedCoupon(data)
+      setCouponDiscount(Math.round(disc))
+      toast.success(`Coupon applied! You save ৳${Math.round(disc)}`)
+    } catch {
+      toast.error('Failed to apply coupon')
+    } finally {
+      setApplyingCoupon(false)
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null)
+    setCouponDiscount(0)
+    setCouponCode('')
+  }
 
   const selectedMethod = paymentMethods.find(m => m.key === payment)
   const activeFields = selectedMethod?.fields || []
@@ -81,6 +138,8 @@ export default function Checkout() {
         customer_area: 'Alam Nagar',
         delivery_note: note,
         payment_method: payment,
+        coupon_code: appliedCoupon?.code || null,
+        discount: Math.round(couponDiscount),
         subtotal: Math.round(cartTotal),
         delivery_charge: deliveryCharge,
         total: Math.round(finalTotal),
@@ -112,6 +171,11 @@ export default function Checkout() {
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
       if (itemsError) throw itemsError
+
+      // Increment coupon used_count
+      if (appliedCoupon) {
+        supabase.from('coupons').update({ used_count: appliedCoupon.used_count + 1 }).eq('id', appliedCoupon.id)
+      }
 
       setOrderPlaced(true)
       clearCart()
@@ -291,11 +355,44 @@ export default function Checkout() {
                   )
                 })}
               </div>
+              {/* Coupon */}
+              <div className="border-t pt-3 mb-3">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🎟️</span>
+                      <div>
+                        <code className="text-xs font-bold text-green-800">{appliedCoupon.code}</code>
+                        <p className="text-[11px] text-green-600">You save ৳{couponDiscount}</p>
+                      </div>
+                    </div>
+                    <button type="button" onClick={removeCoupon} className="p-1 hover:bg-green-100 rounded text-green-600">
+                      <FiX size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Coupon code" className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:border-primary-500 uppercase" />
+                    <button type="button" onClick={applyCoupon} disabled={applyingCoupon}
+                      className="px-3 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition disabled:opacity-50">
+                      {applyingCoupon ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Subtotal</span>
                   <span>৳{Math.round(cartTotal)}</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-green-600">Discount</span>
+                    <span className="text-green-600">-৳{couponDiscount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">Delivery</span>
                   <span className={deliveryCharge === 0 ? 'text-green-600' : ''}>

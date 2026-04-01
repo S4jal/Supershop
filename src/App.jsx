@@ -25,6 +25,7 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
 const AdminPaymentMethods = lazy(() => import('./pages/admin/AdminPaymentMethods'))
+const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'))
 
 function PageLoader() {
   return (
@@ -49,6 +50,7 @@ function App() {
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="payments" element={<AdminPaymentMethods />} />
+              <Route path="coupons" element={<AdminCoupons />} />
               </Route>
 
               {/* Store routes */}
