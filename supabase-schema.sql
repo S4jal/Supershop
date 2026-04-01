@@ -1,0 +1,128 @@
+-- =============================================
+-- SuperShop Database Schema for Supabase
+-- Run this in Supabase SQL Editor
+-- =============================================
+
+-- Categories table
+CREATE TABLE categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  icon TEXT DEFAULT '📦',
+  color TEXT DEFAULT '#16a34a',
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Products table
+CREATE TABLE products (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+  price NUMERIC(10,2) NOT NULL DEFAULT 0,
+  unit TEXT NOT NULL DEFAULT 'kg',
+  image_url TEXT,
+  emoji TEXT DEFAULT '📦',
+  discount INT DEFAULT 0 CHECK (discount >= 0 AND discount <= 100),
+  stock INT DEFAULT 0,
+  rating NUMERIC(2,1) DEFAULT 0,
+  is_featured BOOLEAN DEFAULT false,
+  is_bestseller BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Orders table
+CREATE TABLE orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_number TEXT NOT NULL UNIQUE,
+  customer_name TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  customer_address TEXT NOT NULL,
+  customer_area TEXT NOT NULL,
+  delivery_note TEXT,
+  payment_method TEXT NOT NULL DEFAULT 'cod',
+  subtotal NUMERIC(10,2) NOT NULL DEFAULT 0,
+  delivery_charge NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total NUMERIC(10,2) NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'processing', 'delivered', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Order items table
+CREATE TABLE order_items (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  product_name TEXT NOT NULL,
+  product_image TEXT,
+  price NUMERIC(10,2) NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  total NUMERIC(10,2) NOT NULL
+);
+
+-- Create storage bucket for product images
+INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage policy: anyone can view product images
+CREATE POLICY "Public product images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'products');
+
+-- Storage policy: authenticated users can upload/delete
+CREATE POLICY "Auth users manage product images" ON storage.objects
+  FOR ALL USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+
+-- Enable RLS
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
+-- Public read access for categories and products
+CREATE POLICY "Public read categories" ON categories FOR SELECT USING (true);
+CREATE POLICY "Public read products" ON products FOR SELECT USING (true);
+
+-- Auth users can manage everything
+CREATE POLICY "Auth manage categories" ON categories FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth manage products" ON products FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth manage orders" ON orders FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth manage order_items" ON order_items FOR ALL USING (auth.role() = 'authenticated');
+
+-- Public can create orders (placing orders)
+CREATE POLICY "Public create orders" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public create order_items" ON order_items FOR INSERT WITH CHECK (true);
+
+-- Auto-update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER products_updated_at BEFORE UPDATE ON products
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER orders_updated_at BEFORE UPDATE ON orders
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Seed default categories
+INSERT INTO categories (name, slug, icon, color, sort_order) VALUES
+  ('Rice & Flour', 'rice', '🍚', '#f59e0b', 1),
+  ('Dal & Pulses', 'dal', '🫘', '#d97706', 2),
+  ('Oil & Ghee', 'oil', '🫗', '#eab308', 3),
+  ('Spices', 'spices', '🌶️', '#ef4444', 4),
+  ('Dairy', 'dairy', '🥛', '#3b82f6', 5),
+  ('Fruits', 'fruits', '🍎', '#22c55e', 6),
+  ('Vegetables', 'vegetables', '🥬', '#65a30d', 7),
+  ('Snacks', 'snacks', '🍪', '#f97316', 8),
+  ('Beverages', 'beverages', '🥤', '#0ea5e9', 9),
+  ('Meat & Poultry', 'meat', '🍗', '#dc2626', 10),
+  ('Fish & Seafood', 'fish', '🐟', '#0284c7', 11),
+  ('Personal Care', 'personal', '🧴', '#8b5cf6', 12),
+  ('Baby Care', 'baby', '👶', '#ec4899', 13);
