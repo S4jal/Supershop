@@ -141,12 +141,20 @@ export default function Checkout() {
           Thank you, {form.name}! Your order will be delivered to {form.road}, Alam Nagar within 2 hours.
         </p>
         <p className="text-sm text-gray-400 mt-2">Order confirmation sent to {form.phone}</p>
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full mt-8 hover:bg-primary-700 transition"
-        >
-          Back to Home
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+          <Link
+            to="/track"
+            className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-700 transition"
+          >
+            Track Order
+          </Link>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-full hover:bg-gray-50 transition"
+          >
+            Back to Home
+          </Link>
+        </div>
       </div>
     )
   }

@@ -100,6 +100,7 @@ export default function Navbar() {
             <div className="flex flex-col gap-2">
               <Link to="/" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">Home</Link>
               <Link to="/products" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">All Products</Link>
+              <Link to="/track" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">Track Order</Link>
               <Link to="/cart" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">Cart ({cartCount})</Link>
             </div>
           </nav>
