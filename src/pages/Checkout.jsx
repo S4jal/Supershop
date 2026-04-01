@@ -1,32 +1,32 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiArrowLeft, FiCheck } from 'react-icons/fi'
+import { FiArrowLeft, FiCheck, FiMapPin, FiEdit2 } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 export default function Checkout() {
   const { cart, cartTotal, cartCount, clearCart } = useCart()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [paymentMethods, setPaymentMethods] = useState([])
   const [paymentFields, setPaymentFields] = useState({})
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    road: '',
-    house: '',
-    note: '',
-    payment: 'cod',
-  })
+  const [note, setNote] = useState('')
+  const [payment, setPayment] = useState('cod')
+
+  // Check login & address
+  const isLoggedIn = !!user
+  const hasAddress = !!(profile?.name && profile?.phone && profile?.default_road && profile?.default_house)
 
   useEffect(() => {
     supabase.from('payment_methods').select('*').eq('is_active', true).order('sort_order')
       .then(({ data }) => {
         if (data && data.length > 0) {
           setPaymentMethods(data)
-          setForm(prev => ({ ...prev, payment: data[0].key }))
+          setPayment(data[0].key)
         }
       })
   }, [])
@@ -34,26 +34,30 @@ export default function Checkout() {
   const deliveryCharge = cartTotal >= 500 ? 0 : 50
   const finalTotal = cartTotal + deliveryCharge
 
-  const selectedMethod = paymentMethods.find(m => m.key === form.payment)
+  const selectedMethod = paymentMethods.find(m => m.key === payment)
   const activeFields = selectedMethod?.fields || []
-
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
 
   const handlePaymentFieldChange = (fieldName, value) => {
     setPaymentFields(prev => ({ ...prev, [fieldName]: value }))
   }
 
   const handlePaymentSelect = (key) => {
-    setForm(prev => ({ ...prev, payment: key }))
+    setPayment(key)
     setPaymentFields({})
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.phone || !form.road || !form.house) {
-      toast.error('Please fill all required fields')
+
+    if (!isLoggedIn) {
+      toast.error('Please sign in first')
+      navigate('/account')
+      return
+    }
+
+    if (!hasAddress) {
+      toast.error('Please add your delivery address in profile')
+      navigate('/profile')
       return
     }
 
@@ -71,12 +75,12 @@ export default function Checkout() {
 
       const orderData = {
         order_number: orderNumber,
-        customer_name: form.name,
-        customer_phone: form.phone,
-        customer_address: `${form.house}, ${form.road}, Alam Nagar`,
+        customer_name: profile.name,
+        customer_phone: profile.phone,
+        customer_address: `${profile.default_house}, ${profile.default_road}, Alam Nagar`,
         customer_area: 'Alam Nagar',
-        delivery_note: form.note,
-        payment_method: form.payment,
+        delivery_note: note,
+        payment_method: payment,
         subtotal: Math.round(cartTotal),
         delivery_charge: deliveryCharge,
         total: Math.round(finalTotal),
@@ -138,23 +142,49 @@ export default function Checkout() {
         </div>
         <h2 className="text-2xl font-bold text-gray-800">Order Placed Successfully! 🎉</h2>
         <p className="text-gray-500 mt-3">
-          Thank you, {form.name}! Your order will be delivered to {form.road}, Alam Nagar within 2 hours.
+          Thank you, {profile?.name}! Your order will be delivered to {profile?.default_road}, Alam Nagar within 2 hours.
         </p>
-        <p className="text-sm text-gray-400 mt-2">Order confirmation sent to {form.phone}</p>
+        <p className="text-sm text-gray-400 mt-2">Order confirmation sent to {profile?.phone}</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-          <Link
-            to="/track"
-            className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-700 transition"
-          >
+          <Link to="/track"
+            className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-700 transition">
             Track Order
           </Link>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-full hover:bg-gray-50 transition"
-          >
+          <Link to="/"
+            className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-full hover:bg-gray-50 transition">
             Back to Home
           </Link>
         </div>
+      </div>
+    )
+  }
+
+  // Not logged in
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <span className="text-6xl block mb-4">🔐</span>
+        <h2 className="text-xl font-bold text-gray-800">Sign in to continue</h2>
+        <p className="text-gray-500 mt-2 text-sm">You need an account to place orders</p>
+        <Link to="/account"
+          className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full mt-6 hover:bg-primary-700 transition">
+          Sign In / Sign Up
+        </Link>
+      </div>
+    )
+  }
+
+  // Logged in but no address
+  if (!hasAddress) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <span className="text-6xl block mb-4">📍</span>
+        <h2 className="text-xl font-bold text-gray-800">Add your delivery address</h2>
+        <p className="text-gray-500 mt-2 text-sm">Please complete your profile with name, phone, and address to place orders</p>
+        <Link to="/profile?redirect=/checkout"
+          className="inline-flex items-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full mt-6 hover:bg-primary-700 transition">
+          Complete Profile
+        </Link>
       </div>
     )
   }
@@ -168,41 +198,28 @@ export default function Checkout() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Delivery info */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Delivery address from profile */}
             <div className="bg-white rounded-xl border p-5">
-              <h3 className="font-bold text-gray-800 mb-4">Delivery Information</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-800">Delivery Address</h3>
+                <Link to="/profile" className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700">
+                  <FiEdit2 size={14} /> Change
+                </Link>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-primary-50 rounded-xl">
+                <FiMapPin size={20} className="text-primary-600 shrink-0 mt-0.5" />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Enter your name"
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
+                  <p className="font-semibold text-gray-800">{profile.name}</p>
+                  <p className="text-sm text-gray-600">{profile.default_house}, {profile.default_road}, Alam Nagar</p>
+                  <p className="text-sm text-gray-500">{profile.phone}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                  <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="01XXXXXXXXX"
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Road Number *</label>
-                  <select name="road" value={form.road} onChange={handleChange}
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm bg-white">
-                    <option value="">Select Road</option>
-                    {Array.from({ length: 18 }, (_, i) => (
-                      <option key={i + 1} value={`Road No ${i + 1}`}>Road No {i + 1}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">House Name / Number / Flat *</label>
-                  <input type="text" name="house" value={form.house} onChange={handleChange} placeholder="e.g. House 12, Flat 3A"
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Note</label>
-                  <input type="text" name="note" value={form.note} onChange={handleChange} placeholder="Any special instructions"
-                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
-                </div>
+              </div>
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Note (optional)</label>
+                <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Any special instructions"
+                  className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:border-primary-500 text-sm" />
               </div>
             </div>
 
@@ -214,9 +231,9 @@ export default function Checkout() {
                   <label key={method.key}
                     onClick={() => handlePaymentSelect(method.key)}
                     className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition ${
-                      form.payment === method.key ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+                      payment === method.key ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
                     }`}>
-                    <input type="radio" name="payment" value={method.key} checked={form.payment === method.key} readOnly className="hidden" />
+                    <input type="radio" name="payment" value={method.key} checked={payment === method.key} readOnly className="hidden" />
                     <span className="text-2xl">{method.icon}</span>
                     <div>
                       <p className="text-sm font-medium text-gray-800">{method.name}</p>
@@ -226,7 +243,6 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {/* Account info for selected method */}
               {selectedMethod?.account_info && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                   <p className="text-sm font-semibold text-yellow-800 mb-1">{selectedMethod.name} Payment Info:</p>
@@ -234,7 +250,6 @@ export default function Checkout() {
                 </div>
               )}
 
-              {/* Dynamic payment fields */}
               {activeFields.length > 0 && (
                 <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
                   <p className="text-sm font-semibold text-gray-700 mb-3">{selectedMethod?.name} Details</p>

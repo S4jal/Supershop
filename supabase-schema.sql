@@ -65,6 +65,26 @@ CREATE TABLE order_items (
   total NUMERIC(10,2) NOT NULL
 );
 
+-- Customer profiles table
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  name TEXT,
+  phone TEXT,
+  email TEXT,
+  default_road TEXT,
+  default_house TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE TRIGGER profiles_updated_at BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Payment methods table
 CREATE TABLE payment_methods (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

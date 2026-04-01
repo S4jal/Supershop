@@ -29,7 +29,7 @@ export default function AdminLogin() {
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-white font-bold text-2xl">S</span>
+            <span className="text-white font-bold text-2xl">A</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in to manage your store</p>

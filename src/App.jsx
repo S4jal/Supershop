@@ -14,6 +14,8 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const Cart = lazy(() => import('./pages/Cart'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const TrackOrder = lazy(() => import('./pages/TrackOrder'))
+const Account = lazy(() => import('./pages/Account'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 // Lazy load admin pages (heavy: recharts, supabase admin queries)
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
@@ -61,6 +63,8 @@ function App() {
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/checkout" element={<Checkout />} />
                     <Route path="/track" element={<TrackOrder />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/profile" element={<Profile />} />
                     </Routes>
                   </main>
                   <Footer />

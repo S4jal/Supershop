@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiShoppingCart, FiSearch, FiMenu, FiX, FiMapPin, FiPhone } from 'react-icons/fi'
+import { FiShoppingCart, FiSearch, FiMenu, FiX, FiMapPin, FiPhone, FiUser } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const { cartCount } = useCart()
+  const { user } = useAuth()
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
@@ -63,7 +65,16 @@ export default function Navbar() {
           </form>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Link to={user ? '/profile' : '/account'} className="p-2 hover:bg-gray-100 rounded-full transition hidden sm:flex">
+              {user ? (
+                <div className="w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{user.email?.[0]?.toUpperCase()}</span>
+                </div>
+              ) : (
+                <FiUser size={22} className="text-gray-700" />
+              )}
+            </Link>
             <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-full transition">
               <FiShoppingCart size={24} className="text-gray-700" />
               {cartCount > 0 && (
@@ -102,6 +113,9 @@ export default function Navbar() {
               <Link to="/products" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">All Products</Link>
               <Link to="/track" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">Track Order</Link>
               <Link to="/cart" onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">Cart ({cartCount})</Link>
+              <Link to={user ? '/profile' : '/account'} onClick={() => setMenuOpen(false)} className="px-3 py-2 text-gray-700 hover:bg-primary-50 rounded-lg">
+                {user ? 'My Account' : 'Sign In / Sign Up'}
+              </Link>
             </div>
           </nav>
         )}

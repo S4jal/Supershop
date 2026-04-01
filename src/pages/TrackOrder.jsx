@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { FiSearch, FiCheckCircle, FiClock, FiTruck, FiPackage, FiXCircle } from 'react-icons/fi'
 import { supabase } from '../lib/supabase'
 
@@ -12,11 +12,19 @@ const steps = [
 ]
 
 export default function TrackOrder() {
-  const [query, setQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') || '')
   const [order, setOrder] = useState(null)
   const [orderItems, setOrderItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+
+  // Auto-search from URL param
+  useEffect(() => {
+    if (query) {
+      handleSearch({ preventDefault: () => {} })
+    }
+  }, [])
 
   // Realtime subscription
   useEffect(() => {
