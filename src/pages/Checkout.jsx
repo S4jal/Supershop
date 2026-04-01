@@ -69,7 +69,7 @@ export default function Checkout() {
     try {
       const orderNumber = 'AN-' + Date.now().toString(36).toUpperCase()
 
-      const { data: order, error: orderError } = await supabase.from('orders').insert({
+      const orderData = {
         order_number: orderNumber,
         customer_name: form.name,
         customer_phone: form.phone,
@@ -77,12 +77,17 @@ export default function Checkout() {
         customer_area: 'Alam Nagar',
         delivery_note: form.note,
         payment_method: form.payment,
-        payment_details: activeFields.length > 0 ? paymentFields : null,
         subtotal: Math.round(cartTotal),
         delivery_charge: deliveryCharge,
         total: Math.round(finalTotal),
         status: 'pending',
-      }).select().single()
+      }
+      if (activeFields.length > 0) {
+        orderData.payment_details = paymentFields
+      }
+
+      const { data: order, error: orderError } = await supabase.from('orders')
+        .insert(orderData).select().single()
 
       if (orderError) throw orderError
 
