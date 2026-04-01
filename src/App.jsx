@@ -16,6 +16,7 @@ import Dashboard from './pages/admin/Dashboard'
 import AdminProducts from './pages/admin/AdminProducts'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminOrders from './pages/admin/AdminOrders'
+import AdminPaymentMethods from './pages/admin/AdminPaymentMethods'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
               <Route path="products" element={<AdminProducts />} />
               <Route path="categories" element={<AdminCategories />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="payments" element={<AdminPaymentMethods />} />
             </Route>
 
             {/* Store routes */}

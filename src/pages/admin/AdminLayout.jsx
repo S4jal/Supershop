@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { FiGrid, FiBox, FiTag, FiShoppingBag, FiLogOut, FiHome } from 'react-icons/fi'
+import { FiGrid, FiBox, FiTag, FiShoppingBag, FiCreditCard, FiLogOut, FiHome } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/admin/products', icon: FiBox, label: 'Products' },
   { path: '/admin/categories', icon: FiTag, label: 'Categories' },
   { path: '/admin/orders', icon: FiShoppingBag, label: 'Orders' },
+  { path: '/admin/payments', icon: FiCreditCard, label: 'Payment Methods' },
 ]
 
 export default function AdminLayout() {

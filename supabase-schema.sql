@@ -64,6 +64,31 @@ CREATE TABLE order_items (
   total NUMERIC(10,2) NOT NULL
 );
 
+-- Payment methods table
+CREATE TABLE payment_methods (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  key TEXT NOT NULL UNIQUE,
+  icon TEXT DEFAULT '💳',
+  description TEXT,
+  account_info TEXT,
+  is_active BOOLEAN DEFAULT true,
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Public read access for payment methods
+ALTER TABLE payment_methods ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read payment_methods" ON payment_methods FOR SELECT USING (true);
+CREATE POLICY "Auth manage payment_methods" ON payment_methods FOR ALL USING (auth.role() = 'authenticated');
+
+-- Seed default payment methods
+INSERT INTO payment_methods (name, key, icon, description, account_info, is_active, sort_order) VALUES
+  ('Cash on Delivery', 'cod', '💵', 'Pay when you receive', NULL, true, 1),
+  ('bKash', 'bkash', '📱', 'Mobile payment', NULL, false, 2),
+  ('Nagad', 'nagad', '📲', 'Mobile payment', NULL, false, 3),
+  ('Card Payment', 'card', '💳', 'Visa/Mastercard', NULL, false, 4);
+
 -- Create storage bucket for product images
 INSERT INTO storage.buckets (id, name, public) VALUES ('products', 'products', true)
 ON CONFLICT (id) DO NOTHING;

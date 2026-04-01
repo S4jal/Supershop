@@ -1,15 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
+const defaultPaymentMethods = [
+  { id: 'cod', name: 'Cash on Delivery', key: 'cod', icon: '💵', description: 'Pay when you receive', account_info: null },
+  { id: 'bkash', name: 'bKash', key: 'bkash', icon: '📱', description: 'Mobile payment', account_info: null },
+  { id: 'nagad', name: 'Nagad', key: 'nagad', icon: '📲', description: 'Mobile payment', account_info: null },
+  { id: 'card', name: 'Card Payment', key: 'card', icon: '💳', description: 'Visa/Mastercard', account_info: null },
+]
+
 export default function Checkout() {
   const { cart, cartTotal, cartCount, clearCart } = useCart()
   const navigate = useNavigate()
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState([])
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -18,6 +26,18 @@ export default function Checkout() {
     note: '',
     payment: 'cod',
   })
+
+  useEffect(() => {
+    supabase.from('payment_methods').select('*').eq('is_active', true).order('sort_order')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setPaymentMethods(data)
+          setForm(prev => ({ ...prev, payment: data[0].key }))
+        } else {
+          setPaymentMethods(defaultPaymentMethods)
+        }
+      })
+  }, [])
 
   const deliveryCharge = cartTotal >= 500 ? 0 : 50
   const finalTotal = cartTotal + deliveryCharge
@@ -164,25 +184,34 @@ export default function Checkout() {
             <div className="bg-white rounded-xl border p-5">
               <h3 className="font-bold text-gray-800 mb-4">Payment Method</h3>
               <div className="grid sm:grid-cols-2 gap-3">
-                {[
-                  { id: 'cod', name: 'Cash on Delivery', icon: '💵', desc: 'Pay when you receive' },
-                  { id: 'bkash', name: 'bKash', icon: '📱', desc: 'Mobile payment' },
-                  { id: 'nagad', name: 'Nagad', icon: '📲', desc: 'Mobile payment' },
-                  { id: 'card', name: 'Card Payment', icon: '💳', desc: 'Visa/Mastercard' },
-                ].map(method => (
-                  <label key={method.id}
+                {paymentMethods.map(method => (
+                  <label key={method.key}
                     className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition ${
-                      form.payment === method.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+                      form.payment === method.key ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
                     }`}>
-                    <input type="radio" name="payment" value={method.id} checked={form.payment === method.id} onChange={handleChange} className="hidden" />
+                    <input type="radio" name="payment" value={method.key} checked={form.payment === method.key} onChange={handleChange} className="hidden" />
                     <span className="text-2xl">{method.icon}</span>
                     <div>
                       <p className="text-sm font-medium text-gray-800">{method.name}</p>
-                      <p className="text-xs text-gray-500">{method.desc}</p>
+                      <p className="text-xs text-gray-500">{method.description}</p>
                     </div>
                   </label>
                 ))}
               </div>
+
+              {/* Show account info for selected payment method */}
+              {(() => {
+                const selected = paymentMethods.find(m => m.key === form.payment)
+                if (selected?.account_info) {
+                  return (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                      <p className="text-sm font-semibold text-yellow-800 mb-1">{selected.name} Payment Info:</p>
+                      <p className="text-sm text-yellow-700 whitespace-pre-line">{selected.account_info}</p>
+                    </div>
+                  )
+                }
+                return null
+              })()}
             </div>
           </div>
 
